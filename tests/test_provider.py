@@ -25,6 +25,7 @@ class SerpApiProviderTests(unittest.TestCase):
         params = get.call_args.kwargs["params"]
         self.assertEqual(params["engine"], "google_flights_deals")
         self.assertEqual(params["outbound_date"], "2027-01-25,2027-02-05")
+        self.assertEqual(params["return_date"], "2027-01-25,2027-02-05")
         self.assertEqual(params["query"], "Tromso Norway")
 
 
