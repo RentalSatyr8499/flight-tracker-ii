@@ -70,7 +70,10 @@ def main() -> None:
                               f"({offer.departure_date} to {offer.return_date}): {', '.join(reasons)}.")
 
     if failures:
-        lines.append("search warnings: " + "; ".join(failures))
+        warning_text = "; ".join(failures[:3])
+        if len(failures) > 3:
+            warning_text += f"; and {len(failures) - 3} more"
+        lines.append("search warnings: " + warning_text)
     lines.append("_Cheapest fare found in the flexible window; prices may change before booking._")
     discord = DiscordClient(config.discord_bot_token, config.discord_channel_id_2, config.discord_channel_id_1)
     discord.upsert_tracker_message("\n".join(lines), Path("data/price-history.png"))
