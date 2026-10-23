@@ -27,7 +27,8 @@ jobs:
       MAX_ALERT_PRICE: ""
       SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-      DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+      DISCORD_CHANNEL_ID_1: ${{ secrets.DISCORD_CHANNEL_ID_1 }}
+      DISCORD_CHANNEL_ID_2: ${{ secrets.DISCORD_CHANNEL_ID_2 }}
       DISCORD_USER_ID: ${{ secrets.DISCORD_USER_ID }}
     steps:
       - name: checkout
