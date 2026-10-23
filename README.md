@@ -1,53 +1,41 @@
 # flight tracker
 
-tracks round-trip flight prices for late january to early february 2027 across flexible arctic destinations. records daily observations, charts price history, updates one discord message, and sends alerts when configured thresholds are met.
+Tracks round-trip fares from IAD and RIC to northern destinations with strong aurora-viewing potential. Each run searches a flexible departure window, records the cheapest returned itinerary for every origin/destination pair, charts history, and updates one persistent Discord message. It pings the configured user only when a route is at or below the price floor or drops by the configured amount since the prior observation.
 
 ## stack
 
-- python 3.12 for orchestration and data processing
-- serpapi google flights api behind a replaceable provider interface
-- json for persistent price history and discord message metadata
-- matplotlib for price chart generation
-- requests for serpapi and discord rest calls
-- github actions for daily scheduled runs
-- unittest for automated tests
+- Python 3.12, SerpApi Google Flights, requests, Matplotlib, JSON, GitHub Actions, and unittest
 
 ## repository layout
 
-- `.github/workflows/track-flights.yml`: daily schedule, route settings, price thresholds, and workflow steps
-- `src/flight_tracker/main.py`: coordinates search, storage, charting, discord updates, and alerts
-- `src/flight_tracker/config.py`: reads settings and secrets from environment variables
-- `src/flight_tracker/providers/base.py`: shared offer model and provider interface
-- `src/flight_tracker/providers/serpapi.py`: searches google flights through serpapi and normalizes offers
-- `src/flight_tracker/history.py`: records daily offers and finds the lowest price by destination
-- `src/flight_tracker/chart.py`: renders `data/price-history.png`
-- `src/flight_tracker/discord_client.py`: edits one persistent chart message and sends mentions
-- `tests/test_history.py`: checks daily price deduplication
+- `.github/workflows/track-flights.yml`: schedule, airport lists, date window, trip length, and alert thresholds
+- `src/flight_tracker/main.py`: searches, stores best offers, updates Discord, and sends conditional alerts
+- `src/flight_tracker/config.py`: settings and secrets
+- `src/flight_tracker/providers/base.py`: normalized offer model and provider contract
+- `src/flight_tracker/providers/serpapi.py`: flexible-date search and offer normalization
+- `src/flight_tracker/history.py`: daily cheapest fare per route and previous observations
+- `src/flight_tracker/chart.py`: price-history chart
+- `src/flight_tracker/discord_client.py`: persistent tracker message and user mentions
+- `tests/`: unit tests
 
 ## secrets
 
-add these under repository settings, secrets and variables, actions:
+Add these under repository settings → secrets and variables → actions:
 
 - `SERPAPI_API_KEY`
 - `DISCORD_BOT_TOKEN`
-- `DISCORD_CHANNEL_ID_1`: channel for price-threshold pings
+- `DISCORD_CHANNEL_ID_1`: channel for conditional price-alert pings
 - `DISCORD_CHANNEL_ID_2`: channel for the persistent tracker message and graph
 - `DISCORD_USER_ID`
 
-the discord bot needs permission to view and send messages in both channels. In the tracker channel, it also needs read message history and permission to attach files.
+The bot needs permission to view and send messages in both channels. In the tracker channel, it also needs read message history and permission to attach files.
 
 ## configuration
 
-edit the environment variables in `.github/workflows/track-flights.yml` to set the origin airport, destinations, departure and return dates, currency, and alert thresholds. `MIN_ALERT_PRICE` sends an alert at or below its value. `MAX_ALERT_PRICE` currently also alerts at or below its value, so use it only if that behavior is intended.
+Edit `.github/workflows/track-flights.yml`: `ORIGIN_AIRPORTS` is currently IAD,RIC; `DESTINATION_AIRPORTS` lists the northern destinations; `DATE_RANGE_START` and `DATE_RANGE_END` define the flexible departure window; `MIN_TRIP_LENGTH` is the minimum trip length (3 days); `MAX_TRIP_LENGTH` is the maximum (11 days); `MIN_ALERT_PRICE` triggers a ping at or below $500; and `PRICE_DROP_ALERT` triggers a ping when the route price falls by at least $50 since its previous observation.
+
+The workflow runs at 7 a.m. and 10 p.m. US Eastern Standard Time (12:00 and 03:00 UTC). GitHub Actions cron uses UTC, so adjust the hours if you want to follow daylight-saving time. Every successful run updates the tracker message; only matching alert conditions trigger a user mention.
 
 ## execution
 
-the workflow installs dependencies, runs tests, searches configured routes, records daily prices, renders the chart, updates the persistent discord message, and commits updated history and message metadata. github actions runners are temporary, so the workflow commits state back to the repository.
-
-## implementation notes
-
-- keep provider-specific logic inside `providers/serpapi.py` so another search api can replace it.
-- use matplotlib for accurate charts rather than an image-generation model.
-- compare prices only when route, dates, and currency match.
-- treat returned fares as observations, not guaranteed booking prices.
-- keep api keys and bot tokens in github secrets, never in source files.
+The workflow installs dependencies, runs tests, searches all origin/destination pairs, records each route's cheapest returned fare and actual departure/return dates, renders the chart, updates Discord, and commits history and message metadata. Fare results are observations, not guaranteed booking prices.
