@@ -5,24 +5,12 @@ from .base import FlightOffer
 
 
 DESTINATION_QUERIES = {
-    "TOS": "Tromso Norway",
-    "KEF": "Keflavik Iceland",
-    "ABZ": "Aberdeen Scotland",
-    "HEL": "Helsinki Finland",
-    "ALF": "Alta Norway",
-    "BOO": "Bodo Norway",
-    "EVE": "Evenes Norway",
-    "KKN": "Kirkenes Norway",
-    "LYR": "Longyearbyen Svalbard",
-    "KTT": "Kittila Finland",
-    "RVN": "Rovaniemi Finland",
-    "IVL": "Ivalo Finland",
-    "KRN": "Kiruna Sweden",
-    "LLA": "Lulea Sweden",
-    "SFJ": "Kangerlussuaq Greenland",
-    "GOH": "Nuuk Greenland",
-    "YXY": "Whitehorse Canada",
-    "YZF": "Yellowknife Canada",
+    "TOS": "Tromso Norway", "KEF": "Keflavik Iceland", "ABZ": "Aberdeen Scotland",
+    "HEL": "Helsinki Finland", "ALF": "Alta Norway", "BOO": "Bodo Norway",
+    "EVE": "Evenes Norway", "KKN": "Kirkenes Norway", "LYR": "Longyearbyen Svalbard",
+    "KTT": "Kittila Finland", "RVN": "Rovaniemi Finland", "IVL": "Ivalo Finland",
+    "KRN": "Kiruna Sweden", "LLA": "Lulea Sweden", "SFJ": "Kangerlussuaq Greenland",
+    "GOH": "Nuuk Greenland", "YXY": "Whitehorse Canada", "YZF": "Yellowknife Canada",
     "FAI": "Fairbanks Alaska",
 }
 
@@ -60,10 +48,9 @@ class SerpApiProvider:
             price = item.get("price")
             outbound_date = item.get("start_date")
             return_date = item.get("end_date")
-            arrival_code = item.get("arrival_airport_code", "")
             if price is None or not outbound_date or not return_date:
                 continue
-            if arrival_code and arrival_code.upper() != destination:
+            if (item.get("arrival_airport_code") or "").upper() != destination:
                 continue
             try:
                 trip_days = (date.fromisoformat(return_date) - date.fromisoformat(outbound_date)).days
@@ -72,13 +59,8 @@ class SerpApiProvider:
             if trip_days < min_trip_length or trip_days > max_trip_length:
                 continue
             offers.append(FlightOffer(
-                origin=origin,
-                destination=destination,
-                departure_date=outbound_date,
-                return_date=return_date,
-                price=float(price),
-                currency=currency,
-                booking_url=item.get("flight_link", ""),
-                airline_summary=item.get("airline", ""),
+                origin=origin, destination=destination, departure_date=outbound_date,
+                return_date=return_date, price=float(price), currency=currency,
+                booking_url=item.get("flight_link", ""), airline_summary=item.get("airline", ""),
             ))
         return offers
