@@ -30,10 +30,11 @@ add these under repository settings, secrets and variables, actions:
 
 - `SERPAPI_API_KEY`
 - `DISCORD_BOT_TOKEN`
-- `DISCORD_CHANNEL_ID`
+- `DISCORD_CHANNEL_ID_1`: channel for price-threshold pings
+- `DISCORD_CHANNEL_ID_2`: channel for the persistent tracker message and graph
 - `DISCORD_USER_ID`
 
-the discord bot needs permission to view the channel, send messages, read message history, and attach files.
+the discord bot needs permission to view and send messages in both channels. In the tracker channel, it also needs read message history and permission to attach files.
 
 ## configuration
 
