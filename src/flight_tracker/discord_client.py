@@ -7,9 +7,10 @@ API = "https://discord.com/api/v10"
 
 
 class DiscordClient:
-    def __init__(self, token: str, channel_id: str):
+    def __init__(self, token: str, tracker_channel_id: str, alert_channel_id: str):
         self.token = token
-        self.channel_id = channel_id
+        self.tracker_channel_id = tracker_channel_id
+        self.alert_channel_id = alert_channel_id
         self.headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
 
     def _request(self, method: str, url: str, **kwargs):
@@ -20,7 +21,7 @@ class DiscordClient:
     def upsert_tracker_message(self, content: str, image_path: Path,
                                message_id_path: Path = MESSAGE_ID_PATH) -> str:
         message_id = message_id_path.read_text().strip() if message_id_path.exists() else ""
-        url = f"{API}/channels/{self.channel_id}/messages"
+        url = f"{API}/channels/{self.tracker_channel_id}/messages"
         if message_id:
             try:
                 self._request("PATCH", f"{url}/{message_id}", json={"content": content})
@@ -59,6 +60,6 @@ class DiscordClient:
         return message_id
 
     def send_alert(self, user_id: str, message: str) -> None:
-        self._request("POST", f"{API}/channels/{self.channel_id}/messages",
+        self._request("POST", f"{API}/channels/{self.alert_channel_id}/messages",
                       json={"content": f"<@{user_id}> {message}",
                             "allowed_mentions": {"users": [user_id]}})
