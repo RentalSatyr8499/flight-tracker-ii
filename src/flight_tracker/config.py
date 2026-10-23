@@ -19,7 +19,8 @@ class Config:
     max_alert_price: float | None
     serpapi_api_key: str
     discord_bot_token: str
-    discord_channel_id: str
+    discord_channel_id_1: str
+    discord_channel_id_2: str
     discord_user_id: str
 
     @classmethod
@@ -28,7 +29,10 @@ class Config:
             value = os.getenv(name, "").strip()
             return float(value) if value else None
 
-        required = ("SERPAPI_API_KEY", "DISCORD_BOT_TOKEN", "DISCORD_CHANNEL_ID", "DISCORD_USER_ID")
+        required = (
+            "SERPAPI_API_KEY", "DISCORD_BOT_TOKEN", "DISCORD_CHANNEL_ID_1",
+            "DISCORD_CHANNEL_ID_2", "DISCORD_USER_ID"
+        )
         missing = [name for name in required if not os.getenv(name)]
         if missing:
             raise RuntimeError("Missing required environment variables: " + ", ".join(missing))
@@ -45,6 +49,7 @@ class Config:
             max_alert_price=optional_float("MAX_ALERT_PRICE"),
             serpapi_api_key=os.environ["SERPAPI_API_KEY"],
             discord_bot_token=os.environ["DISCORD_BOT_TOKEN"],
-            discord_channel_id=os.environ["DISCORD_CHANNEL_ID"],
+            discord_channel_id_1=os.environ["DISCORD_CHANNEL_ID_1"],
+            discord_channel_id_2=os.environ["DISCORD_CHANNEL_ID_2"],
             discord_user_id=os.environ["DISCORD_USER_ID"],
         )
