@@ -30,8 +30,6 @@ def main() -> None:
                 failures.append(f"{origin}->{destination}: {exc}")
                 print(f"search failed for {origin}->{destination}: {exc}")
 
-    if not todays_offers:
-        raise RuntimeError("no flight offers returned. " + " | ".join(failures))
 
     selected = {}
     for offer in todays_offers:
@@ -53,7 +51,6 @@ def main() -> None:
             key = (origin, destination)
             offer = selected.get(key)
             if not offer:
-                lines.append(f"**{origin} → {destination}:** no offers returned")
                 continue
             departure = offer.departure_date[5:]
             returning = offer.return_date[5:]
@@ -69,6 +66,8 @@ def main() -> None:
                 alerts.append(f"**{origin} → {destination}** is {offer.currency} {offer.price:.0f} "
                               f"({offer.departure_date} to {offer.return_date}): {', '.join(reasons)}.")
 
+    if not selected:
+        lines.append("No flight offers were found on this run; routes without results were skipped.")
     if failures:
         warning_text = "; ".join(failures[:3])
         if len(failures) > 3:
