@@ -6,7 +6,7 @@ from typing import Protocol
 
 @dataclass(frozen=True)
 class FlightOffer:
-    """hold the route, dates, price, and booking details for one offer."""
+    """hold the route, selected travel dates, price, and booking details."""
 
     origin: str
     destination: str
@@ -21,6 +21,7 @@ class FlightOffer:
 class FlightProvider(Protocol):
     """define the search method required of each provider adapter."""
 
-    def search(self, origin: str, destination: str, departure_date: str,
-               return_date: str, currency: str) -> list[FlightOffer]:
-        """return normalized round-trip offers for a route and date pair."""
+    def search(self, origin: str, destination: str, date_range_start: str,
+               date_range_end: str, min_trip_length: int, max_trip_length: int,
+               currency: str) -> list[FlightOffer]:
+        """return offers found within the flexible departure and trip-length window."""
