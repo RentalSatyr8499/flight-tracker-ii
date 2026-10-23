@@ -1,6 +1,9 @@
 # flight tracker
 
-Tracks round-trip fares from IAD and RIC to northern destinations with strong aurora-viewing potential. Each run searches a flexible travel window, records the cheapest returned itinerary for every origin/destination pair, charts history, and updates one persistent Discord message. It pings the configured user only when a route is at or below the price floor or drops by the configured amount since the prior observation.
+Tracks round-trip fares according to `track-flights.yml`. Each run searches a flexible travel window, records the cheapest returned itinerary for every origin/destination pair, charts history, and updates one persistent Discord message. It pings the configured user only when a route is at or below the price floor or drops by the configured amount since the prior observation.
+
+<img width="816" height="144" alt="image" src="https://github.com/user-attachments/assets/ed9dcc2b-38d4-4cb6-b083-d41fda31f960" />
+<img width="906" height="738" alt="image" src="https://github.com/user-attachments/assets/edc44c10-4b93-4f6e-b69a-4786de8ab751" />
 
 ## stack
 
