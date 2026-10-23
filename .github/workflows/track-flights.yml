@@ -1,0 +1,56 @@
+name: track flight prices
+
+on:
+  schedule:
+    - cron: "17 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flight-price-tracker
+  cancel-in-progress: false
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    env:
+      ORIGIN_AIRPORT: IAD
+      DESTINATION_AIRPORTS: TOS,KEF,ABZ,HEL
+      DEPARTURE_DATE: "2027-01-25"
+      RETURN_DATE: "2027-02-05"
+      CURRENCY: USD
+      SERPAPI_COUNTRY: us
+      SERPAPI_LANGUAGE: en
+      MIN_ALERT_PRICE: "700"
+      MAX_ALERT_PRICE: ""
+      SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+      DISCORD_USER_ID: ${{ secrets.DISCORD_USER_ID }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: install dependencies
+        run: pip install -r requirements.txt
+      - name: run unit tests
+        run: python -m unittest discover -s tests
+      - name: track prices and update discord
+        run: python -m src.flight_tracker.main
+      - name: commit price history and message id
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/history.json data/price-history.png data/discord_message_id.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "update flight price history"
+            git push
+          fi
