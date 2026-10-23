@@ -4,7 +4,7 @@ Tracks round-trip fares from IAD and RIC to northern destinations with strong au
 
 ## stack
 
-- Python 3.12, SerpApi Google Flights, requests, Matplotlib, JSON, GitHub Actions, and unittest
+- Python 3.12, SerpApi Google Flights Deals flexible-date search, requests, Matplotlib, JSON, GitHub Actions, and unittest
 
 ## repository layout
 
@@ -32,7 +32,7 @@ The bot needs permission to view and send messages in both channels. In the trac
 
 ## configuration
 
-Edit `.github/workflows/track-flights.yml`: `ORIGIN_AIRPORTS` is currently IAD,RIC; `DESTINATION_AIRPORTS` lists the northern destinations; `DATE_RANGE_START` and `DATE_RANGE_END` define the flexible departure window; `MIN_TRIP_LENGTH` is the minimum trip length (3 days); `MAX_TRIP_LENGTH` is the maximum (11 days); `MIN_ALERT_PRICE` triggers a ping at or below $500; and `PRICE_DROP_ALERT` triggers a ping when the route price falls by at least $50 since its previous observation.
+Edit `.github/workflows/track-flights.yml`: `ORIGIN_AIRPORTS` is currently IAD,RIC; `DESTINATION_AIRPORTS` lists the northern destinations; `DATE_RANGE_START` and `DATE_RANGE_END` define the allowed outbound-and-return travel window; `MIN_TRIP_LENGTH` is the minimum trip length (3 days); `MAX_TRIP_LENGTH` is the maximum (11 days); `MIN_ALERT_PRICE` triggers a ping at or below $500; and `PRICE_DROP_ALERT` triggers a ping when the route price falls by at least $50 since its previous observation.
 
 The workflow runs at 7 a.m. and 10 p.m. US Eastern Standard Time (12:00 and 03:00 UTC). GitHub Actions cron uses UTC, so adjust the hours if you want to follow daylight-saving time. Every successful run updates the tracker message; only matching alert conditions trigger a user mention.
 
