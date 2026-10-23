@@ -2,7 +2,7 @@ name: track flight prices
 
 on:
   schedule:
-    - cron: "17 12 * * *"
+    - cron: "0 12,3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -16,15 +16,17 @@ jobs:
   track:
     runs-on: ubuntu-latest
     env:
-      ORIGIN_AIRPORT: IAD
-      DESTINATION_AIRPORTS: TOS,KEF,ABZ,HEL
-      DEPARTURE_DATE: "2027-01-25"
-      RETURN_DATE: "2027-02-05"
+      ORIGIN_AIRPORTS: IAD,RIC
+      DESTINATION_AIRPORTS: TOS,KEF,ABZ,HEL,ALF,BOO,EVE,KKN,LYR,KTT,RVN,IVL,KRN,LLA,SFJ,GOH,YXY,YZF,FAI
+      DATE_RANGE_START: "2027-01-25"
+      DATE_RANGE_END: "2027-02-05"
+      MIN_TRIP_LENGTH: "3"
+      MAX_TRIP_LENGTH: "11"
       CURRENCY: USD
       SERPAPI_COUNTRY: us
       SERPAPI_LANGUAGE: en
-      MIN_ALERT_PRICE: "700"
-      MAX_ALERT_PRICE: ""
+      MIN_ALERT_PRICE: "500"
+      PRICE_DROP_ALERT: "50"
       SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
       DISCORD_CHANNEL_ID_1: ${{ secrets.DISCORD_CHANNEL_ID_1 }}
