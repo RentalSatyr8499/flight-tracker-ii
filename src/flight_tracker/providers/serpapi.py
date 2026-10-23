@@ -32,6 +32,7 @@ class SerpApiProvider:
             "departure_id": origin,
             "query": DESTINATION_QUERIES.get(destination, destination),
             "outbound_date": f"{date_range_start},{date_range_end}",
+            "return_date": f"{date_range_start},{date_range_end}",
             "currency": currency,
             "hl": self.language,
             "gl": self.country,
