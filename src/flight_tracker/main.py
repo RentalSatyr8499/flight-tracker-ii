@@ -1,4 +1,4 @@
-"""run the daily flight search and publish results."""
+"""run flexible-date flight searches and publish the best fare for each route."""
 
 from datetime import date
 from pathlib import Path
@@ -6,68 +6,79 @@ from pathlib import Path
 from .chart import render_chart
 from .config import Config
 from .discord_client import DiscordClient
-from .history import cheapest_by_destination, load_history, record_offers
+from .history import load_history, previous_by_route, record_offers
 from .providers.serpapi import SerpApiProvider
 
 
 def main() -> None:
-    """search routes, record prices, refresh the chart, and send alerts."""
     config = Config.from_env()
     provider = SerpApiProvider(config.serpapi_api_key, config.country, config.language)
     todays_offers = []
     failures = []
-    for destination in config.destinations:
-        try:
-            offers = provider.search(config.origin, destination, config.departure_date,
-                                     config.return_date, config.currency)
-            todays_offers.extend(offers)
-            print(f"{destination}: {len(offers)} offers")
-        except Exception as exc:
-            failures.append(f"{destination}: {exc}")
-            print(f"search failed for {destination}: {exc}")
+    for origin in config.origins:
+        for destination in config.destinations:
+            try:
+                offers = provider.search(origin, destination, config.date_range_start, config.date_range_end,
+                                         config.min_trip_length, config.max_trip_length, config.currency)
+                todays_offers.extend(offers)
+                best = min(offers, key=lambda offer: offer.price) if offers else None
+                if best:
+                    print(f"{origin}->{destination}: {len(offers)} offers; best {best.price:.0f} {best.currency} ({best.departure_date} to {best.return_date})")
+                else:
+                    print(f"{origin}->{destination}: no offers returned")
+            except Exception as exc:
+                failures.append(f"{origin}->{destination}: {exc}")
+                print(f"search failed for {origin}->{destination}: {exc}")
 
     if not todays_offers:
         raise RuntimeError("no flight offers returned. " + " | ".join(failures))
 
-    rows = record_offers(todays_offers, date.today().isoformat())
+    observed_on = date.today().isoformat()
+    previous = previous_by_route(load_history(), observed_on)
+    rows = record_offers(todays_offers, observed_on)
     render_chart(rows)
-    cheapest = cheapest_by_destination(rows)
+
     current = {}
     for offer in todays_offers:
-        row = {
-            "destination": offer.destination, "price": offer.price,
-            "currency": offer.currency, "booking_url": offer.booking_url,
-            "airline_summary": offer.airline_summary,
-        }
-        if offer.destination not in current or offer.price < current[offer.destination]["price"]:
-            current[offer.destination] = row
+        key = (offer.origin, offer.destination)
+        if key not in current or offer.price < current[key]["price"]:
+            current[key] = {"origin": offer.origin, "destination": offer.destination,
+                            "departure_date": offer.departure_date, "return_date": offer.return_date,
+                            "price": offer.price, "currency": offer.currency,
+                            "booking_url": offer.booking_url, "airline_summary": offer.airline_summary}
 
-    lines = [
-        f"**northern lights flight tracker**",
-        f"route: {config.origin} to flexible arctic destinations",
-        f"dates: {config.departure_date} to {config.return_date} · checked {date.today().isoformat()}",
-    ]
-    for destination in config.destinations:
-        offer = current.get(destination)
-        if offer:
+    lines = ["**northern lights flight tracker**", f"origins: {', '.join(config.origins)}",
+             f"departure window: {config.date_range_start} to {config.date_range_end}",
+             f"trip length: {config.min_trip_length}-{config.max_trip_length} days · checked {observed_on}"]
+    alerts = []
+    for origin in config.origins:
+        for destination in config.destinations:
+            key = (origin, destination)
+            offer = current.get(key)
+            if not offer:
+                lines.append(f"**{origin} → {destination}:** no offers returned")
+                continue
             link = f" · [flights]({offer['booking_url']})" if offer["booking_url"] else ""
-            airline = f" | {offer['airline_summary']}" if offer["airline_summary"] else ""
-            lines.append(f"**{destination}: {offer['currency']} {offer['price']:.0f}**{airline}{link}")
-        else:
-            lines.append(f"**{destination}:** no offers returned today")
+            airline = f" · {offer['airline_summary']}" if offer["airline_summary"] else ""
+            lines.append(f"**{origin} → {destination}: {offer['currency']} {offer['price']:.0f}** · "
+                         f"{offer['departure_date']} to {offer['return_date']}{airline}{link}")
+            prior = previous.get(key)
+            reasons = []
+            if offer["price"] <= config.min_alert_price:
+                reasons.append(f"at or below {config.min_alert_price:.0f} {offer['currency']}")
+            if prior and float(prior["price"]) - offer["price"] >= config.price_drop_alert:
+                reasons.append(f"down {float(prior['price']) - offer['price']:.0f} {offer['currency']} since last check")
+            if reasons:
+                alerts.append(f"**{origin} → {destination}** is {offer['currency']} {offer['price']:.0f} "
+                              f"({offer['departure_date']} to {offer['return_date']}): {', '.join(reasons)}.")
+
     if failures:
         lines.append("search warnings: " + "; ".join(failures))
-    lines.append("_price history is attached; prices can change before booking._")
+    lines.append("_Cheapest fare found in the flexible window; prices may change before booking._")
     discord = DiscordClient(config.discord_bot_token, config.discord_channel_id_2, config.discord_channel_id_1)
     discord.upsert_tracker_message("\n".join(lines), Path("data/price-history.png"))
-
-    for destination, offer in current.items():
-        if config.min_alert_price is not None and offer["price"] <= config.min_alert_price:
-            discord.send_alert(config.discord_user_id,
-                f"flight deal: **{destination}** is {offer['currency']} {offer['price']:.0f}, at or below your {config.min_alert_price:.0f} threshold.")
-        if config.max_alert_price is not None and offer["price"] <= config.max_alert_price:
-            discord.send_alert(config.discord_user_id,
-                f"price threshold reached for **{destination}**: {offer['currency']} {offer['price']:.0f} (configured threshold {config.max_alert_price:.0f}).")
+    for alert in alerts:
+        discord.send_alert(config.discord_user_id, "flight deal: " + alert)
 
 
 if __name__ == "__main__":
