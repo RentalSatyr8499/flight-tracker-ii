@@ -33,19 +33,16 @@ def main() -> None:
     if not todays_offers:
         raise RuntimeError("no flight offers returned. " + " | ".join(failures))
 
-    observed_on = datetime.now(timezone.utc).isoformat(timespec="minutes")
-    previous = previous_by_route(load_history(), observed_on)
-    rows = record_offers(todays_offers, observed_on)
-    render_chart(rows)
-
-    current = {}
+    selected = {}
     for offer in todays_offers:
         key = (offer.origin, offer.destination)
-        if key not in current or offer.price < current[key]["price"]:
-            current[key] = {"origin": offer.origin, "destination": offer.destination,
-                            "departure_date": offer.departure_date, "return_date": offer.return_date,
-                            "price": offer.price, "currency": offer.currency,
-                            "booking_url": offer.booking_url, "airline_summary": offer.airline_summary}
+        if key not in selected or offer.price < selected[key].price:
+            selected[key] = offer
+
+    observed_on = datetime.now(timezone.utc).isoformat(timespec="minutes")
+    previous = previous_by_route(load_history(), observed_on)
+    rows = record_offers(selected.values(), observed_on)
+    render_chart(rows)
 
     lines = ["**northern lights flight tracker**", f"origins: {', '.join(config.origins)}",
              f"departure window: {config.date_range_start} to {config.date_range_end}",
@@ -54,23 +51,23 @@ def main() -> None:
     for origin in config.origins:
         for destination in config.destinations:
             key = (origin, destination)
-            offer = current.get(key)
+            offer = selected.get(key)
             if not offer:
                 lines.append(f"**{origin} → {destination}:** no offers returned")
                 continue
-            link = f" · [flights]({offer['booking_url']})" if offer["booking_url"] else ""
-            airline = f" · {offer['airline_summary']}" if offer["airline_summary"] else ""
-            lines.append(f"**{origin} → {destination}: {offer['currency']} {offer['price']:.0f}** · "
-                         f"{offer['departure_date']} to {offer['return_date']}{airline}{link}")
+            link = f" · [flights]({offer.booking_url})" if offer.booking_url else ""
+            airline = f" · {offer.airline_summary}" if offer.airline_summary else ""
+            lines.append(f"**{origin} → {destination}: {offer.currency} {offer.price:.0f}** · "
+                         f"{offer.departure_date} to {offer.return_date}{airline}{link}")
             prior = previous.get(key)
             reasons = []
-            if offer["price"] <= config.min_alert_price:
-                reasons.append(f"at or below {config.min_alert_price:.0f} {offer['currency']}")
-            if prior and float(prior["price"]) - offer["price"] >= config.price_drop_alert:
-                reasons.append(f"down {float(prior['price']) - offer['price']:.0f} {offer['currency']} since last check")
+            if offer.price <= config.min_alert_price:
+                reasons.append(f"at or below {config.min_alert_price:.0f} {offer.currency}")
+            if prior and float(prior["price"]) - offer.price >= config.price_drop_alert:
+                reasons.append(f"down {float(prior['price']) - offer.price:.0f} {offer.currency} since last check")
             if reasons:
-                alerts.append(f"**{origin} → {destination}** is {offer['currency']} {offer['price']:.0f} "
-                              f"({offer['departure_date']} to {offer['return_date']}): {', '.join(reasons)}.")
+                alerts.append(f"**{origin} → {destination}** is {offer.currency} {offer.price:.0f} "
+                              f"({offer.departure_date} to {offer.return_date}): {', '.join(reasons)}.")
 
     if failures:
         lines.append("search warnings: " + "; ".join(failures))
