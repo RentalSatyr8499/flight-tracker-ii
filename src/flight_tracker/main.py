@@ -45,7 +45,7 @@ def main() -> None:
     render_chart(rows)
 
     lines = ["**northern lights flight tracker**", f"origins: {', '.join(config.origins)}",
-             f"departure window: {config.date_range_start} to {config.date_range_end}",
+             f"travel window: {config.date_range_start} to {config.date_range_end}",
              f"trip length: {config.min_trip_length}-{config.max_trip_length} days · checked {observed_on} UTC"]
     alerts = []
     for origin in config.origins:
