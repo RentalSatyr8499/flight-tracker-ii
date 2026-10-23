@@ -1,6 +1,6 @@
 """run flexible-date flight searches and publish the best fare for each route."""
 
-from datetime import date
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .chart import render_chart
@@ -33,7 +33,7 @@ def main() -> None:
     if not todays_offers:
         raise RuntimeError("no flight offers returned. " + " | ".join(failures))
 
-    observed_on = date.today().isoformat()
+    observed_on = datetime.now(timezone.utc).isoformat(timespec="minutes")
     previous = previous_by_route(load_history(), observed_on)
     rows = record_offers(todays_offers, observed_on)
     render_chart(rows)
@@ -49,7 +49,7 @@ def main() -> None:
 
     lines = ["**northern lights flight tracker**", f"origins: {', '.join(config.origins)}",
              f"departure window: {config.date_range_start} to {config.date_range_end}",
-             f"trip length: {config.min_trip_length}-{config.max_trip_length} days · checked {observed_on}"]
+             f"trip length: {config.min_trip_length}-{config.max_trip_length} days · checked {observed_on} UTC"]
     alerts = []
     for origin in config.origins:
         for destination in config.destinations:
