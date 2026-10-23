@@ -1,6 +1,6 @@
 # flight tracker
 
-Tracks round-trip fares from IAD and RIC to northern destinations with strong aurora-viewing potential. Each run searches a flexible departure window, records the cheapest returned itinerary for every origin/destination pair, charts history, and updates one persistent Discord message. It pings the configured user only when a route is at or below the price floor or drops by the configured amount since the prior observation.
+Tracks round-trip fares from IAD and RIC to northern destinations with strong aurora-viewing potential. Each run searches a flexible travel window, records the cheapest returned itinerary for every origin/destination pair, charts history, and updates one persistent Discord message. It pings the configured user only when a route is at or below the price floor or drops by the configured amount since the prior observation.
 
 ## stack
 
@@ -13,7 +13,7 @@ Tracks round-trip fares from IAD and RIC to northern destinations with strong au
 - `src/flight_tracker/config.py`: settings and secrets
 - `src/flight_tracker/providers/base.py`: normalized offer model and provider contract
 - `src/flight_tracker/providers/serpapi.py`: flexible-date search and offer normalization
-- `src/flight_tracker/history.py`: daily cheapest fare per route and previous observations
+- `src/flight_tracker/history.py`: cheapest selected fare per route and previous observations
 - `src/flight_tracker/chart.py`: price-history chart
 - `src/flight_tracker/discord_client.py`: persistent tracker message and user mentions
 - `tests/`: unit tests
@@ -38,4 +38,4 @@ The workflow runs at 7 a.m. and 10 p.m. US Eastern Standard Time (12:00 and 03:0
 
 ## execution
 
-The workflow installs dependencies, runs tests, searches all origin/destination pairs, records each route's cheapest returned fare and actual departure/return dates, renders the chart, updates Discord, and commits history and message metadata. Fare results are observations, not guaranteed booking prices.
+The workflow installs dependencies, runs tests, searches all origin/destination pairs, records each route's cheapest eligible fare and actual departure/return dates, renders the chart, updates Discord, and commits history and message metadata. Fare results are observations, not guaranteed booking prices.
