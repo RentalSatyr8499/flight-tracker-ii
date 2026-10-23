@@ -1,0 +1,46 @@
+[
+  {
+    "observed_on": "2026-10-23",
+    "origin": "IAD",
+    "destination": "ABZ",
+    "departure_date": "2027-01-25",
+    "return_date": "2027-02-05",
+    "price": 984.0,
+    "currency": "USD",
+    "booking_url": "",
+    "airline_summary": "Delta, KLM"
+  },
+  {
+    "observed_on": "2026-10-23",
+    "origin": "IAD",
+    "destination": "HEL",
+    "departure_date": "2027-01-25",
+    "return_date": "2027-02-05",
+    "price": 712.0,
+    "currency": "USD",
+    "booking_url": "",
+    "airline_summary": "British Airways, Finnair"
+  },
+  {
+    "observed_on": "2026-10-23",
+    "origin": "IAD",
+    "destination": "KEF",
+    "departure_date": "2027-01-25",
+    "return_date": "2027-02-05",
+    "price": 486.0,
+    "currency": "USD",
+    "booking_url": "",
+    "airline_summary": "Discover Airlines, United"
+  },
+  {
+    "observed_on": "2026-10-23",
+    "origin": "IAD",
+    "destination": "TOS",
+    "departure_date": "2027-01-25",
+    "return_date": "2027-02-05",
+    "price": 944.0,
+    "currency": "USD",
+    "booking_url": "",
+    "airline_summary": "Scandinavian Airlines, Tap Air Portugal"
+  }
+]
