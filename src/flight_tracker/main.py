@@ -55,10 +55,10 @@ def main() -> None:
             if not offer:
                 lines.append(f"**{origin} → {destination}:** no offers returned")
                 continue
-            link = f" · [flights]({offer.booking_url})" if offer.booking_url else ""
-            airline = f" · {offer.airline_summary}" if offer.airline_summary else ""
-            lines.append(f"**{origin} → {destination}: {offer.currency} {offer.price:.0f}** · "
-                         f"{offer.departure_date} to {offer.return_date}{airline}{link}")
+            departure = offer.departure_date[5:]
+            returning = offer.return_date[5:]
+            lines.append(f"**{origin}→{destination} {offer.currency} {offer.price:.0f}** · "
+                         f"{departure}–{returning}")
             prior = previous.get(key)
             reasons = []
             if offer.price <= config.min_alert_price:
