@@ -58,7 +58,7 @@ def main() -> None:
     if failures:
         lines.append("search warnings: " + "; ".join(failures))
     lines.append("_price history is attached; prices can change before booking._")
-    discord = DiscordClient(config.discord_bot_token, config.discord_channel_id)
+    discord = DiscordClient(config.discord_bot_token, config.discord_channel_id_2, config.discord_channel_id_1)
     discord.upsert_tracker_message("\n".join(lines), Path("data/price-history.png"))
 
     for destination, offer in current.items():
